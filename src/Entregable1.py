@@ -1,4 +1,5 @@
 from enum import Enum
+import pytest
 
 class Persona():
     """
@@ -17,6 +18,9 @@ class Persona():
         self._dni = dni
         self._direccion = direccion
     
+    def getdni(self):
+        return self._dni
+    
 class Estudiante(Persona):
     """
     Clase que representa a un estudiante. Hereda de Persona.
@@ -24,13 +28,18 @@ class Estudiante(Persona):
     Atributos:
     - curso (str): El curso del estudiante.
     - num_expediente (str): El número de expediente del estudiante.
+    - asignaturas (list): La lista de asignaturas que esta matriculado el estudiante.
     """
 
-    def __init__(self, nombre, sexo, dni, direccion, curso, num_expediente):
+    def __init__(self, nombre, sexo, dni, direccion, curso, num_expediente, asignaturas):
         super().__init__(nombre, sexo, dni, direccion)
         self._curso = curso
         self._num_expediente = num_expediente
+        self._asignaturas = asignaturas
 
+    def __str__(self):
+        return f"nombre:{self._nombre}, expediente:{self._num_expediente}, asignaturas:{self._asignaturas}"
+    
 class Departamento(Enum):
     """
     Enumeración que representa los departamentos de la universidad en los que puede estar un profesor.
@@ -63,6 +72,8 @@ class Profesor(Persona):
         Parámetros:
         - departamento (Departamento): El nuevo departamento del profesor. Recuerda que el valor tiene que ser uno de los valores de la enumeración Departamento.
         """
+        if not isinstance(departamento, Departamento):
+            raise ValueError("El departamento tiene que ser un valor de la enumeración Departamento")
         self.departamento = Departamento(departamento)
 
 class ProfesorTitular(Profesor):
@@ -76,7 +87,10 @@ class ProfesorTitular(Profesor):
     def __init__(self, nombre, sexo, dni, direccion, departamento, asignaturas, investigador:bool, investigacion):
         super().__init__(nombre, sexo, dni, direccion, departamento, asignaturas, investigador)
         self.area_investigacion = investigacion
-    #Esto tengo que mirarlo
+
+    def __str__(self):
+        return f"nombre:{self._nombre}, departamento:{self.departamento}, asignaturas:{self.asignaturas}, investigacion:{self.area_investigacion}"
+        
     def _cambiar_investigacion(self, investigacion):
         """
         Cambia el área de investigación del profesor titular.
@@ -84,6 +98,8 @@ class ProfesorTitular(Profesor):
         Parámetros:
         - investigacion (str): El nuevo área de investigación del profesor titular.
         """
+        if not isinstance(investigacion, str):
+            raise TypeError("El área de investigación tiene que ser un string")
         self.area_investigacion = investigacion
 
 class ProfesorAdjunto(Profesor):
@@ -96,6 +112,20 @@ class ProfesorAdjunto(Profesor):
 
     def __init__(self, nombre, sexo, dni, direccion, departamento, asignaturas, investigador:bool, trabajo):
         super().__init__(nombre, sexo, dni, direccion, departamento, asignaturas, investigador)
+        self.trabajo_externo = trabajo
+
+    def __str__(self):
+        return f"nombre:{self._nombre},departamento:{self.departamento}, asignaturas:{self.asignaturas}, trabajo:{self.trabajo_externo}"
+
+    def cambiar_trabajo(self, trabajo):
+        """
+        Cambia el trabajo externo del profesor adjunto.
+
+        Parámetros:
+        - trabajo (str): El nuevo trabajo externo del profesor adjunto.
+        """
+        if not isinstance(trabajo, str):
+            raise TypeError("El trabajo tiene que ser un string")
         self.trabajo_externo = trabajo
 
 class Asignatura():
@@ -115,6 +145,12 @@ class Asignatura():
         self._cuatrimestre = cuatrimestre
         self._creditos = creditos
 
+    def __str__(self):
+        return f"nombre:{self._nombre}, curso:{self._curso} creditos:{self._creditos}"
+    
+    def getnombre(self):
+        return self._nombre
+    
 class Universidad():
     """
     Clase que representa una universidad. Utilizada como gestor de todo el programa.
@@ -132,7 +168,7 @@ class Universidad():
         self.profesores = []
         self.asignaturas = []
     
-    def nuevoEstudiante(self, nombre, sexo, dni, direccion, curso, num_expediente):
+    def nuevoEstudiante(self, nombre, sexo, dni, direccion, curso, num_expediente, asignaturas):
         """
         Crea un nuevo estudiante y lo agrega a la lista de estudiantes.
 
@@ -143,8 +179,9 @@ class Universidad():
         - direccion (str): La dirección del estudiante.
         - curso (str): El curso del estudiante.
         - num_expediente (str): El número de expediente del estudiante.
+        - asignaturas (list): La lista de asignaturas que esta matriculado el estudiante.
         """
-        self.estudiantes.append(Estudiante(nombre, sexo, dni, direccion, curso, num_expediente))
+        self.estudiantes.append(Estudiante(nombre, sexo, dni, direccion, curso, num_expediente, asignaturas))
 
     def nuevoProfesor(self, nombre, sexo, dni, direccion, departamento, asignaturas, investigador:bool, investigacion=None, trabajo=None):
         """
@@ -189,7 +226,7 @@ class Universidad():
         - Estudiante: El estudiante encontrado o None si no se encuentra.
         """
         for estudiante in self.estudiantes:
-            if estudiante._dni == dni:
+            if estudiante.getdni() == dni:
                 return estudiante
         return None
     
@@ -204,7 +241,7 @@ class Universidad():
         - Profesor: El profesor encontrado o None si no se encuentra.
         """
         for profesor in self.profesores:
-            if profesor._dni == dni:
+            if profesor.getdni() == dni:
                 return profesor
         return None 
     
@@ -219,7 +256,7 @@ class Universidad():
         - Asignatura: La asignatura encontrada o None si no se encuentra.
         """
         for asignatura in self.asignaturas:
-            if asignatura._nombre == nombre:
+            if asignatura.getnombre() == nombre:
                 return asignatura
         return None
     
@@ -270,3 +307,40 @@ class Universidad():
             self.asignaturas.remove(asignatura)
             return True
         return False
+    
+def test_Profesor_cambiarDepartamento():
+    programacion = Asignatura("Programación", "1º", "1º", 6)
+    profesor = Profesor("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], False)
+    profesor.cambiarDepartamento(Departamento.DITEC)
+    assert profesor.departamento == Departamento.DITEC
+
+def test_Profesor_cambiarDepartamento_excepcion():
+    programacion = Asignatura("Programación", "1º", "1º", 6)
+    profesor = Profesor("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], False)
+    with pytest.raises(ValueError):
+        profesor.cambiarDepartamento("DITEC")
+
+def test_ProfesorTitular_cambiar_investigacion():
+    programacion = Asignatura("Programación", "1º", "1º", 6)
+    profesor = ProfesorTitular("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], True, "Git")
+    profesor._cambiar_investigacion("ML")
+    assert profesor.area_investigacion == "ML"
+
+def test_ProfesorTitular_cambiar_investigacion_excepcion():
+    programacion = Asignatura("Programación", "1º", "1º", 6)
+    profesor = ProfesorTitular("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], True, "Git")
+    with pytest.raises(TypeError):
+        profesor._cambiar_investigacion(1)
+
+def test_ProfesorAdjunto_cambiar_trabajo():
+    programacion = Asignatura("Programación", "1º", "1º", 6)
+    profesor = ProfesorAdjunto("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], False, "Programador")
+    profesor.cambiar_trabajo("Profesor")
+    assert profesor.trabajo_externo == "Profesor"
+
+def test_ProfesorAdjunto_cambiar_trabajo_excepcion():
+    programacion = Asignatura("Programación", "1º", "1º", 6)
+    profesor = ProfesorAdjunto("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], False, "Programador")
+    with pytest.raises(TypeError):
+        profesor.cambiar_trabajo(1)
+        
