@@ -1,6 +1,29 @@
 from enum import Enum
 import pytest
 
+class Asignatura():
+    """
+    Clase que representa una asignatura.
+
+    Atributos:
+    - nombre (str): El nombre de la asignatura.
+    - curso (str): El curso donde se imparte la asignatura.
+    - cuatrimestre (str): El cuatrimestre donde se imparte la asignatura.
+    - creditos (int): El número de créditos de la asignatura.
+    """
+
+    def __init__(self, nombre, curso, cuatrimestre, creditos):
+        self._nombre = nombre
+        self._curso = curso
+        self._cuatrimestre = cuatrimestre
+        self._creditos = creditos
+
+    def __str__(self):
+        return f"nombre:{self._nombre}, curso:{self._curso} creditos:{self._creditos}"
+    
+    def getnombre(self):
+        return self._nombre
+
 class Persona():
     """
     Clase que representa a una persona. Usada principalmente como clase base para Estudiante y Profesor.
@@ -13,6 +36,8 @@ class Persona():
     """
 
     def __init__(self, nombre, sexo, dni, direccion):
+        if not all(isinstance(i, str) for i in [nombre, sexo, dni, direccion]):
+            raise TypeError("Las variables tienen que ser un string")
         self._nombre = nombre
         self._sexo = sexo
         self._dni = dni
@@ -20,6 +45,9 @@ class Persona():
     
     def getdni(self):
         return self._dni
+    
+    def getnombre(self):
+        return self._nombre
     
 class Estudiante(Persona):
     """
@@ -39,6 +67,32 @@ class Estudiante(Persona):
 
     def __str__(self):
         return f"nombre:{self._nombre}, expediente:{self._num_expediente}, asignaturas:{self._asignaturas}"
+    
+    def agregar_asignatura(self, asignatura):
+        """
+        Agrega una asignatura a la lista de asignaturas del estudiante.
+
+        Parámetros:
+        - asignatura (Asignatura): La asignatura a agregar.
+        """
+        if not isinstance(asignatura, Asignatura):
+            raise ValueError("La asignatura tiene que ser un objeto de la clase Asignatura")
+
+        self._asignaturas.append(asignatura)
+
+
+    def eliminar_asignatura(self, asignatura):
+        """
+        Elimina una asignatura de la lista de asignaturas del profesor.
+
+        Parámetros:
+        - asignatura (Asignatura): La asignatura a eliminar.
+        """
+        if not isinstance(asignatura, Asignatura):
+            raise ValueError("La asignatura tiene que ser un objeto de la clase Asignatura")
+
+        if asignatura in self._asignaturas:
+            self._asignaturas.remove(asignatura)
     
 class Departamento(Enum):
     """
@@ -75,6 +129,32 @@ class Profesor(Persona):
         if not isinstance(departamento, Departamento):
             raise ValueError("El departamento tiene que ser un valor de la enumeración Departamento")
         self.departamento = Departamento(departamento)
+
+    def agregar_asignatura(self, asignatura):
+        """
+        Agrega una asignatura a la lista de asignaturas del profesor.
+
+        Parámetros:
+        - asignatura (Asignatura): La asignatura a agregar.
+        """
+        if not isinstance(asignatura, Asignatura):
+            raise ValueError("La asignatura tiene que ser un objeto de la clase Asignatura")
+
+        self.asignaturas.append(asignatura)
+
+    def eliminar_asignatura(self, asignatura):
+        """
+        Elimina una asignatura de la lista de asignaturas del profesor.
+
+        Parámetros:
+        - asignatura (Asignatura): La asignatura a eliminar.
+        """
+        if not isinstance(asignatura, Asignatura):
+            raise ValueError("La asignatura tiene que ser un objeto de la clase Asignatura")
+
+        if asignatura in self.asignaturas:
+            self.asignaturas.remove(asignatura)
+    
 
 class ProfesorTitular(Profesor):
     """
@@ -127,30 +207,7 @@ class ProfesorAdjunto(Profesor):
         if not isinstance(trabajo, str):
             raise TypeError("El trabajo tiene que ser un string")
         self.trabajo_externo = trabajo
-
-class Asignatura():
-    """
-    Clase que representa una asignatura.
-
-    Atributos:
-    - nombre (str): El nombre de la asignatura.
-    - curso (str): El curso donde se imparte la asignatura.
-    - cuatrimestre (str): El cuatrimestre donde se imparte la asignatura.
-    - creditos (int): El número de créditos de la asignatura.
-    """
-
-    def __init__(self, nombre, curso, cuatrimestre, creditos):
-        self._nombre = nombre
-        self._curso = curso
-        self._cuatrimestre = cuatrimestre
-        self._creditos = creditos
-
-    def __str__(self):
-        return f"nombre:{self._nombre}, curso:{self._curso} creditos:{self._creditos}"
-    
-    def getnombre(self):
-        return self._nombre
-    
+  
 class Universidad():
     """
     Clase que representa una universidad. Utilizada como gestor de todo el programa.
@@ -307,40 +364,3 @@ class Universidad():
             self.asignaturas.remove(asignatura)
             return True
         return False
-    
-def test_Profesor_cambiarDepartamento():
-    programacion = Asignatura("Programación", "1º", "1º", 6)
-    profesor = Profesor("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], False)
-    profesor.cambiarDepartamento(Departamento.DITEC)
-    assert profesor.departamento == Departamento.DITEC
-
-def test_Profesor_cambiarDepartamento_excepcion():
-    programacion = Asignatura("Programación", "1º", "1º", 6)
-    profesor = Profesor("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], False)
-    with pytest.raises(ValueError):
-        profesor.cambiarDepartamento("DITEC")
-
-def test_ProfesorTitular_cambiar_investigacion():
-    programacion = Asignatura("Programación", "1º", "1º", 6)
-    profesor = ProfesorTitular("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], True, "Git")
-    profesor._cambiar_investigacion("ML")
-    assert profesor.area_investigacion == "ML"
-
-def test_ProfesorTitular_cambiar_investigacion_excepcion():
-    programacion = Asignatura("Programación", "1º", "1º", 6)
-    profesor = ProfesorTitular("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], True, "Git")
-    with pytest.raises(TypeError):
-        profesor._cambiar_investigacion(1)
-
-def test_ProfesorAdjunto_cambiar_trabajo():
-    programacion = Asignatura("Programación", "1º", "1º", 6)
-    profesor = ProfesorAdjunto("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], False, "Programador")
-    profesor.cambiar_trabajo("Profesor")
-    assert profesor.trabajo_externo == "Profesor"
-
-def test_ProfesorAdjunto_cambiar_trabajo_excepcion():
-    programacion = Asignatura("Programación", "1º", "1º", 6)
-    profesor = ProfesorAdjunto("Julian", "V", "74952134F", "Calle Prueba", Departamento.DIIC, [programacion], False, "Programador")
-    with pytest.raises(TypeError):
-        profesor.cambiar_trabajo(1)
-        
