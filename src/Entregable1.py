@@ -364,3 +364,74 @@ class Universidad():
             self.asignaturas.remove(asignatura)
             return True
         return False
+    
+if __name__ == "__main__":
+    chequeo = True
+    uni = Universidad()
+    #Bucle para que el programa no se cierre y probar las funciones
+    while chequeo == True:
+        a = int(input("¿Qué desea hacer? (1.nuevoEstudiante, 2.nuevoProfesor, 3.nuevaAsignatura, 4.buscarEstudiante, 5.buscarProfesor, 6.buscarAsignatura, 7.eliminarEstudiante, 8.eliminarProfesor, 9.eliminarAsignatura, 10.salir): "))
+        if a == 1:
+            nombre = input("Nombre: ")
+            sexo = input("Sexo: ")
+            dni = input("DNI: ")
+            direccion = input("Direccion: ")
+            curso = input("Curso: ")
+            num_expediente = input("Numero de expediente: ")
+            asignaturas = []
+            uni.nuevoEstudiante(nombre, sexo, dni, direccion, curso, num_expediente, asignaturas)
+
+        elif a == 2:
+            nombre = input("Nombre: ")
+            sexo = input("Sexo: ")
+            dni = input("DNI: ")
+            direccion = input("Direccion: ")
+            departamento = input("Departamento: ")
+            asignaturas = []
+            investigador = input("Investigador: (True/False)")
+            if investigador == "True":
+                investigacion = input("Investigacion: ")
+                uni.nuevoProfesor(nombre, sexo, dni, direccion, departamento, asignaturas, True, investigacion)
+            else:
+                trabajo = input("Trabajo: ")
+                uni.nuevoProfesor(nombre, sexo, dni, direccion, departamento, asignaturas, False, None, trabajo)
+        
+        elif a == 3:
+            nombre = input("Nombre: ")
+            curso = input("Curso: ")
+            cuatrimestre = input("Cuatrimestre: ")
+            creditos = input("Creditos: ")
+            uni.nuevaAsignatura(nombre, curso, cuatrimestre, creditos)
+
+        elif a == 4:
+            dni = input("DNI: ")
+            print(uni.buscarEstudiante(dni))
+        
+        elif a == 5:
+            dni = input("DNI: ")
+            print(uni.buscarProfesor(dni))
+        
+        elif a == 6:
+            nombre = input("Nombre: ")
+            print(uni.buscarAsignatura(nombre))
+        
+        elif a == 7:
+            dni = input("DNI: ")
+            print(uni.eliminarEstudiante(dni))
+        
+        elif a == 8:
+            dni = input("DNI: ")
+            print(uni.eliminarProfesor(dni))
+        
+        elif a == 9:
+            nombre = input("Nombre: ")
+            print(uni.eliminarAsignatura(nombre))
+        
+        elif a == 10:
+            chequeo = False
+
+        else:
+            print("Opción no valida")
+
+        #Para dejar un espacio entre cada pregunta
+        print()
